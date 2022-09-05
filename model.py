@@ -9,7 +9,7 @@ class TextGenerator:
     def checkfile(file, method):
         try:
             f = open(file, method)
-        except IOError as e:
+        except IOError:
             print(f'Could not open {file}, please, try again')
             exit()
         else:
@@ -118,7 +118,7 @@ class TextGenerator:
         for i in range(length - len_ - 2):
             next_ = random.choices([word for (word, freq) in model[curr]],
                                    weights=[freq for (word, freq) in model[curr]])
-            curr = (curr[1], next_[0])
             finaltext.append(next_[0])
+            curr = (curr[1], next_[0]) if (curr[1], next_[0]) in model else random.choice(list(model.keys()))
 
         return finaltext
