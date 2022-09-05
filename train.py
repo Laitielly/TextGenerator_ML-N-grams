@@ -10,23 +10,7 @@ def main():
     args = pars.parse_args()
     prepare = model.TextGenerator()
 
-    filename = args.filename
-    text = ''
-
-    if filename is None:
-        text = input('Please, input your text:\n')
-    else:
-        try:
-            f = open(filename, 'r', encoding='utf-8')
-        except IOError as e:
-            print(u'Could not open the file, please, try again')
-            exit()
-        else:
-            for i in f:
-                text += i.lower()
-            f.close()
-
-    prepare.fit(text, args.model)
+    prepare.fit(args.model, args.filename)
 
 
 main()
