@@ -1,6 +1,7 @@
 import random
 import pickle
 import re
+import sys
 
 
 class TextGenerator:
@@ -34,7 +35,9 @@ class TextGenerator:
     def fit(self, dirmodel, file=None) -> None:
         text = ''
         if file is None:
-            text += input('Please, input your text').lower()
+            print('Please, input your text:')
+            for line in sys.stdin:
+                text += line.lower()
         else:
             f = self.checkfile(file, 'r')
             for stroke in f:
