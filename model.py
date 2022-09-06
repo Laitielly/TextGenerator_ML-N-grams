@@ -5,16 +5,21 @@ import sys
 
 
 class TextGenerator:
+    # метод для проверки на существование файла
+    # вообще питон сам выбросит исключение, но тут я хотела
+    # показать умение работать с исключениями)
     @staticmethod
     def checkfile(file, method):
         try:
             f = open(file, method)
         except IOError:
-            print(f'Could not open {file}, please, try again')
+            print(f'Не могу открыть {file}, пожалуйста, попробуйте снова')
             exit()
         else:
             return f
 
+    # функция изменения текста (показываю работу
+    # с функциями типа filter)
     @staticmethod
     def refactoring(text) -> list:
         rule = re.compile('[^а-яё0-9-]')
@@ -22,6 +27,8 @@ class TextGenerator:
 
         return list(filter(None, text))
 
+    # формируем "триплеты" для триграммы
+    # (показываю работу с генераторами)
     @staticmethod
     def createtrigramms(listwords) -> tuple:
         w0, w1 = listwords[0], listwords[1]
@@ -32,10 +39,15 @@ class TextGenerator:
             yield w0, w1, w2
             w0, w1 = w1, w2
 
+    # основная функция обучения
+    # проверяем наличие введеной директории, иначе вводим с консоли
+    # до EOF
+    # вызываем коррекцию текст, создаем триграммы и биграммы
+    # создаем модель
     def fit(self, dirmodel, file=None) -> None:
         text = ''
         if file is None:
-            print('Please, input your text:')
+            print('Пожалуйста, введите свой текст:')
             for line in sys.stdin:
                 text += line.lower()
         else:
@@ -51,6 +63,9 @@ class TextGenerator:
 
         self.createmodel(trigram, dirmodel, bigram)
 
+    # создание биграмм и триграмм (наша модель построена
+    # на триграммах, биграммы нужны для вычисления
+    # вероятности след слова)
     @staticmethod
     def createbitri(trigramms) -> tuple:
         bigram, trigram = {}, {}
@@ -66,6 +81,9 @@ class TextGenerator:
 
         return trigram, bigram
 
+    # строим модель, заводим словарь типа
+    # {(префикс1, префикс2):[(вероятное слово, вероятность)...],...}
+    # сохраняем в файл обученную модель
     @staticmethod
     def createmodel(trigram, dirmodel, bigram) -> None:
         model = {}
@@ -79,6 +97,9 @@ class TextGenerator:
         pickle.dump(model, f)
         f.close()
 
+    # функция генерации текста, вытаскиваем модель из файла
+    # выбираем начало генерируемого текста в функции префикспроцессинг
+    # если длина последовательности еще не достигнута, то генерируем текст
     def generate(self, dirmodel, prefix, length, seed=None) -> list:
         f = self.checkfile(dirmodel, 'rb')
         if f:
@@ -90,7 +111,7 @@ class TextGenerator:
 
         finaltext, initword = self.prefixprocessing(prefix, model)
         if initword is None:
-            return list("Sorry, but generator cannot create smth with this phrase :(".split(' '))
+            return list("Не могу сгенерировать последовательность с данной фразой :(".split(' '))
 
         len_ = len(finaltext)
         if length > len_:
@@ -98,6 +119,8 @@ class TextGenerator:
             return self.createfinaltext(finaltext, initword, length, model, len_)
         return finaltext
 
+    # если перфикс есть, то берем последнее слово и ищем кортеж
+    # с данным словом, иначе берем рандомно
     @staticmethod
     def prefixprocessing(prefix, model) -> (list, tuple):
         initword, finaltext = None, []
@@ -113,6 +136,9 @@ class TextGenerator:
 
         return finaltext, random.choice(list(model.keys()))
 
+    # генерация текста с выбором последующего слова с учетом
+    # вероятностных весов, если кортежа нет в модели, то берем след
+    # слово рандомно
     @staticmethod
     def createfinaltext(finaltext, curr, length, model, len_) -> list:
         for i in range(length - len_ - 2):
@@ -122,3 +148,6 @@ class TextGenerator:
             curr = (curr[1], next_[0]) if (curr[1], next_[0]) in model else random.choice(list(model.keys()))
 
         return finaltext
+
+# модель можно было описать меньшим кол-вом действий, но я старалась показать
+# свои познания в работе с питоном
