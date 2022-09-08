@@ -55,8 +55,7 @@ class TextGenerator:
                 text += line.lower()
         else:
             f = self.checkfile(file, 'r')
-            for stroke in f:
-                text += stroke.lower()
+            text = f.read().lower()
             f.close()
 
         readytext = self.refactoring(text)
