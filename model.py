@@ -1,7 +1,10 @@
-import random
-import pickle
-import re
-import sys
+from random import choice as _rand_
+from random import seed as _seed_
+from random import choices as _rands_
+from pickle import dump as _save_
+from pickle import load as _download_
+from re import compile as _recompile_
+from sys import stdin as _buffer_
 
 
 class TextGenerator:
@@ -22,7 +25,7 @@ class TextGenerator:
     # с функциями типа filter)
     @staticmethod
     def refactoring(text) -> list:
-        rule = re.compile('[^а-яё0-9-]')
+        rule = _recompile_('[^а-яё0-9-]')
         text = rule.sub(' ', text).split(' ')
 
         return list(filter(None, text))
@@ -48,7 +51,7 @@ class TextGenerator:
         text = ''
         if file is None:
             print('Пожалуйста, введите свой текст:')
-            for line in sys.stdin:
+            for line in _buffer_:
                 text += line.lower()
         else:
             f = self.checkfile(file, 'r')
@@ -94,7 +97,7 @@ class TextGenerator:
                 model[w0, w1] = [(w2, freq / bigram[w0, w1])]
 
         f = open(dirmodel, 'wb')
-        pickle.dump(model, f)
+        _save_(model, f)
         f.close()
 
     # функция генерации текста, вытаскиваем модель из файла
@@ -103,11 +106,11 @@ class TextGenerator:
     def generate(self, dirmodel, prefix, length, seed=None) -> list:
         f = self.checkfile(dirmodel, 'rb')
         if f:
-            model = pickle.load(f)
+            model = _download_(f)
             f.close()
 
         if seed is not None:
-            random.seed(seed)
+            _seed_(seed)
 
         finaltext, initword = self.prefixprocessing(prefix, model)
         if initword is None:
@@ -134,7 +137,7 @@ class TextGenerator:
                     initword = word
                     return finaltext, initword
 
-        return finaltext, random.choice(list(model.keys()))
+        return finaltext, _rand_(list(model.keys()))
 
     # генерация текста с выбором последующего слова с учетом
     # вероятностных весов, если кортежа нет в модели, то берем след
@@ -142,10 +145,10 @@ class TextGenerator:
     @staticmethod
     def createfinaltext(finaltext, curr, length, model, len_) -> list:
         for i in range(length - len_ - 2):
-            next_ = random.choices([word for (word, freq) in model[curr]],
-                                   weights=[freq for (word, freq) in model[curr]])
+            next_ = _rands_([word for (word, freq) in model[curr]],
+                            weights=[freq for (word, freq) in model[curr]])
             finaltext.append(next_[0])
-            curr = (curr[1], next_[0]) if (curr[1], next_[0]) in model else random.choice(list(model.keys()))
+            curr = (curr[1], next_[0]) if (curr[1], next_[0]) in model else _rand_(list(model.keys()))
 
         return finaltext
 
